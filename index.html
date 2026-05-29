@@ -1,0 +1,238 @@
+<div style="max-width:850px;
+margin:auto;
+padding:25px;
+font-family:Arial;
+border:1px solid #ddd;
+border-radius:12px;">
+
+<h2>Công cụ tính lâm sàng</h2>
+
+<h3>Thông tin bệnh nhân</h3>
+
+<label>Giới tính</label><br>
+<select id="gender"
+style="width:100%;padding:10px;margin-bottom:15px;">
+<option value="male">Nam</option>
+<option value="female">Nữ</option>
+</select>
+
+<label>Tuổi</label><br>
+<input type="number" id="age" min="1" max="120"
+style="width:100%;padding:10px;margin-bottom:15px;">
+
+<label>Cân nặng (kg)</label><br>
+<input type="number" id="weight" min="1" max="500"
+style="width:100%;padding:10px;margin-bottom:15px;">
+
+<label>Creatinin huyết thanh (µmol/L)</label><br>
+<input type="number" id="creatinine" min="1"
+style="width:100%;padding:10px;margin-bottom:15px;">
+
+<label>Albumin hiện tại (g/L)</label><br>
+<input type="number" id="current_albumin" min="0" max="100"
+style="width:100%;padding:10px;margin-bottom:15px;">
+
+<label>Albumin mục tiêu (g/L)</label><br>
+<input type="number" id="target_albumin" min="0" max="100"
+style="width:100%;padding:10px;margin-bottom:25px;">
+
+<div id="error_box"
+style="display:none;
+background:#ffe5e5;
+color:#b30000;
+padding:12px;
+border-radius:8px;
+margin-bottom:20px;">
+</div>
+
+<hr style="margin:30px 0;">
+
+<h3>Kết quả CrCl</h3>
+
+<div style="font-size:18px;
+background:#fafafa;
+padding:12px;
+border-radius:8px;
+margin-bottom:20px;">
+
+CrCl = ((140 - Tuổi) × Cân nặng)
+÷ (0.814 × Creatinin)
+
+<br><br>
+
+Nữ: kết quả × 0.85
+
+</div>
+
+<div style="background:#f5f5f5;
+padding:15px;
+border-radius:8px;
+margin-top:15px;">
+
+<p style="font-size:22px;">
+<strong>CrCl:</strong>
+<span id="crcl_result">0</span> mL/phút
+</p>
+
+<p>
+<strong>Phân loại:</strong>
+<span id="crcl_stage">-</span>
+</p>
+
+</div>
+
+<hr style="margin:30px 0;">
+
+<h3>Albumin cần bù</h3>
+
+<div style="font-size:18px;
+background:#fafafa;
+padding:12px;
+border-radius:8px;
+margin-bottom:20px;">
+
+Albumin cần bù =
+(Albumin mục tiêu - Albumin hiện tại)
+× Cân nặng × 0.08
+
+</div>
+
+<div style="background:#f5f5f5;
+padding:15px;
+border-radius:8px;
+margin-top:15px;">
+
+<p style="font-size:22px;">
+<strong>Albumin cần bù:</strong>
+<span id="albumin_result">0</span> grams
+</p>
+
+</div>
+
+</div>
+
+<script>
+
+function showError(message){
+
+    const box = document.getElementById("error_box");
+
+    if(message){
+        box.style.display = "block";
+        box.innerText = message;
+    }else{
+        box.style.display = "none";
+        box.innerText = "";
+    }
+}
+
+function calculateAll(){
+
+    let age =
+    parseFloat(document.getElementById("age").value);
+
+    let weight =
+    parseFloat(document.getElementById("weight").value);
+
+    let creatinine =
+    parseFloat(document.getElementById("creatinine").value);
+
+    let gender =
+    document.getElementById("gender").value;
+
+    let currentAlbumin =
+    parseFloat(document.getElementById("current_albumin").value);
+
+    let targetAlbumin =
+    parseFloat(document.getElementById("target_albumin").value);
+
+    // ===== VALIDATION =====
+
+    if(isNaN(age) || age <= 0 || age > 120){
+        showError("Tuổi phải từ 1 đến 120.");
+        return;
+    }
+
+    if(isNaN(weight) || weight <= 0 || weight > 500){
+        showError("Cân nặng phải từ 1 đến 500 kg.");
+        return;
+    }
+
+    if(isNaN(creatinine) || creatinine <= 0){
+        showError("Creatinin phải lớn hơn 0.");
+        return;
+    }
+
+    if(isNaN(currentAlbumin) || currentAlbumin < 0 || currentAlbumin > 100){
+        showError("Albumin hiện tại phải từ 0 đến 100 g/L.");
+        return;
+    }
+
+    if(isNaN(targetAlbumin) || targetAlbumin < 0 || targetAlbumin > 100){
+        showError("Albumin mục tiêu phải từ 0 đến 100 g/L.");
+        return;
+    }
+
+    showError("");
+
+    // ===== TÍNH CrCl =====
+
+    let crcl =
+    ((140 - age) * weight) /
+    (0.814 * creatinine);
+
+    if(gender === "female"){
+        crcl *= 0.85;
+    }
+
+    if(crcl < 0){
+        crcl = 0;
+    }
+
+    document.getElementById("crcl_result")
+    .innerText = crcl.toFixed(2);
+
+    // ===== PHÂN LOẠI =====
+
+    let stage = "-";
+
+    if(crcl >= 90){
+        stage = "Chức năng thận bình thường";
+    }
+    else if(crcl >= 60){
+        stage = "Suy giảm chức năng thận mức độ nhẹ";
+    }
+    else if(crcl >= 30){
+        stage = "Suy giảm chức năng thận mức độ trung bình";
+    }
+    else if(crcl >= 15){
+        stage = "Suy giảm chức năng thận mức độ nặng";
+    }
+    else{
+        stage = "Suy thận giai đoạn cuối";
+    }
+
+    document.getElementById("crcl_stage")
+    .innerText = stage;
+
+    // ===== TÍNH Albumin =====
+
+    let albuminNeed =
+    (targetAlbumin - currentAlbumin)
+    * weight
+    * 0.08;
+
+    if(albuminNeed < 0){
+        albuminNeed = 0;
+    }
+
+    document.getElementById("albumin_result")
+    .innerText = albuminNeed.toFixed(2);
+}
+
+document.querySelectorAll("input, select")
+.forEach(element => {
+    element.addEventListener("input", calculateAll);
+});
+
+</script>
