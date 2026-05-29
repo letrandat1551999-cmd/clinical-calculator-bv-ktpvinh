@@ -17,39 +17,45 @@ style="width:100%;padding:10px;margin-bottom:15px;">
 </select>
 
 <label>Tuổi</label><br>
-<input type="number" id="age" min="1" max="120"
+<input type="number"
+id="age"
+min="1"
+max="120"
 style="width:100%;padding:10px;margin-bottom:15px;">
 
 <label>Cân nặng (kg)</label><br>
-<input type="number" id="weight" min="1" max="500"
+<input type="number"
+id="weight"
+min="1"
+max="500"
 style="width:100%;padding:10px;margin-bottom:15px;">
 
 <label>Creatinin huyết thanh (µmol/L)</label><br>
-<input type="number" id="creatinine" min="1"
+<input type="number"
+id="creatinine"
+min="1"
 style="width:100%;padding:10px;margin-bottom:15px;">
 
 <label>Albumin hiện tại (g/L)</label><br>
-<input type="number" id="current_albumin" min="0" max="100"
+<input type="number"
+id="current_albumin"
+min="0"
+max="100"
 style="width:100%;padding:10px;margin-bottom:15px;">
 
 <label>Albumin mục tiêu (g/L)</label><br>
-<input type="number" id="target_albumin" min="0" max="100"
+<input type="number"
+id="target_albumin"
+min="0"
+max="100"
 style="width:100%;padding:10px;margin-bottom:25px;">
-
-<div id="error_box"
-style="display:none;
-background:#ffe5e5;
-color:#b30000;
-padding:12px;
-border-radius:8px;
-margin-bottom:20px;">
-</div>
 
 <hr style="margin:30px 0;">
 
 <h3>Kết quả CrCl</h3>
 
-<div style="font-size:18px;
+<div style="
+font-size:18px;
 background:#fafafa;
 padding:12px;
 border-radius:8px;
@@ -64,14 +70,39 @@ Nữ: kết quả × 0.85
 
 </div>
 
-<div style="background:#f5f5f5;
-padding:15px;
+<button onclick="calculateCrCl()"
+style="
+background:#0066cc;
+color:white;
+border:none;
+padding:12px 20px;
 border-radius:8px;
-margin-top:15px;">
+cursor:pointer;
+font-size:16px;
+margin-bottom:20px;">
+
+Tính CrCl
+
+</button>
+
+<div id="crcl_error"
+style="
+display:none;
+background:#ffe5e5;
+color:#b30000;
+padding:12px;
+border-radius:8px;
+margin-bottom:15px;">
+</div>
+
+<div style="
+background:#f5f5f5;
+padding:15px;
+border-radius:8px;">
 
 <p style="font-size:22px;">
 <strong>CrCl:</strong>
-<span id="crcl_result">0</span> mL/phút
+<span id="crcl_result">-</span> mL/phút
 </p>
 
 <p>
@@ -85,7 +116,8 @@ margin-top:15px;">
 
 <h3>Albumin cần bù</h3>
 
-<div style="font-size:18px;
+<div style="
+font-size:18px;
 background:#fafafa;
 padding:12px;
 border-radius:8px;
@@ -97,22 +129,60 @@ Albumin cần bù =
 
 </div>
 
-<div style="background:#f5f5f5;
-padding:15px;
+<button onclick="calculateAlbumin()"
+style="
+background:#009966;
+color:white;
+border:none;
+padding:12px 20px;
 border-radius:8px;
-margin-top:15px;">
+cursor:pointer;
+font-size:16px;
+margin-bottom:20px;">
+
+Tính Albumin
+
+</button>
+
+<div id="albumin_error"
+style="
+display:none;
+background:#ffe5e5;
+color:#b30000;
+padding:12px;
+border-radius:8px;
+margin-bottom:15px;">
+</div>
+
+<div style="
+background:#f5f5f5;
+padding:15px;
+border-radius:8px;">
 
 <p style="font-size:22px;">
 <strong>Albumin cần bù:</strong>
-<span id="albumin_result">0</span> grams
+<span id="albumin_result">-</span> grams
 </p>
 
 </div>
 
 </div>
 
-```html
 <script>
+
+function showError(id, message){
+
+    let box = document.getElementById(id);
+
+    if(message){
+        box.style.display = "block";
+        box.innerText = message;
+    }
+    else{
+        box.style.display = "none";
+        box.innerText = "";
+    }
+}
 
 function calculateCrCl(){
 
@@ -128,29 +198,35 @@ function calculateCrCl(){
     let gender =
     document.getElementById("gender").value;
 
-    // ===== VALIDATION =====
+    // VALIDATION
 
-    if(
-        isNaN(age) ||
-        age <= 0 ||
-        age > 120 ||
-        isNaN(weight) ||
-        weight <= 0 ||
-        weight > 500 ||
-        isNaN(creatinine) ||
-        creatinine <= 0
-    ){
-
-        document.getElementById("crcl_result")
-        .innerText = "-";
-
-        document.getElementById("crcl_stage")
-        .innerText = "Thiếu hoặc sai dữ liệu";
-
+    if(isNaN(age) || age <= 0 || age > 120){
+        showError(
+            "crcl_error",
+            "Tuổi phải từ 1 đến 120."
+        );
         return;
     }
 
-    // ===== TÍNH CrCl =====
+    if(isNaN(weight) || weight <= 0 || weight > 500){
+        showError(
+            "crcl_error",
+            "Cân nặng phải từ 1 đến 500 kg."
+        );
+        return;
+    }
+
+    if(isNaN(creatinine) || creatinine <= 0){
+        showError(
+            "crcl_error",
+            "Creatinin phải lớn hơn 0."
+        );
+        return;
+    }
+
+    showError("crcl_error", "");
+
+    // TÍNH CrCl
 
     let crcl =
     ((140 - age) * weight)
@@ -167,7 +243,7 @@ function calculateCrCl(){
     document.getElementById("crcl_result")
     .innerText = crcl.toFixed(2);
 
-    // ===== PHÂN LOẠI =====
+    // PHÂN LOẠI
 
     let stage = "-";
 
@@ -202,27 +278,43 @@ function calculateAlbumin(){
     let targetAlbumin =
     parseFloat(document.getElementById("target_albumin").value);
 
-    // ===== VALIDATION =====
+    // VALIDATION
+
+    if(isNaN(weight) || weight <= 0 || weight > 500){
+        showError(
+            "albumin_error",
+            "Cân nặng phải từ 1 đến 500 kg."
+        );
+        return;
+    }
 
     if(
-        isNaN(weight) ||
-        weight <= 0 ||
-        weight > 500 ||
         isNaN(currentAlbumin) ||
         currentAlbumin < 0 ||
-        currentAlbumin > 100 ||
+        currentAlbumin > 100
+    ){
+        showError(
+            "albumin_error",
+            "Albumin hiện tại phải từ 0 đến 100 g/L."
+        );
+        return;
+    }
+
+    if(
         isNaN(targetAlbumin) ||
         targetAlbumin < 0 ||
         targetAlbumin > 100
     ){
-
-        document.getElementById("albumin_result")
-        .innerText = "-";
-
+        showError(
+            "albumin_error",
+            "Albumin mục tiêu phải từ 0 đến 100 g/L."
+        );
         return;
     }
 
-    // ===== TÍNH AlbumIN =====
+    showError("albumin_error", "");
+
+    // TÍNH ALBUMIN
 
     let albuminNeed =
     (targetAlbumin - currentAlbumin)
@@ -237,20 +329,4 @@ function calculateAlbumin(){
     .innerText = albuminNeed.toFixed(2);
 }
 
-function calculateAll(){
-
-    calculateCrCl();
-    calculateAlbumin();
-}
-
-document.querySelectorAll("input, select")
-.forEach(element => {
-
-    element.addEventListener(
-        "input",
-        calculateAll
-    );
-});
-
 </script>
-```
