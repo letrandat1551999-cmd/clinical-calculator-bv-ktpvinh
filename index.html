@@ -111,22 +111,10 @@ margin-top:15px;">
 
 </div>
 
+```html
 <script>
 
-function showError(message){
-
-    const box = document.getElementById("error_box");
-
-    if(message){
-        box.style.display = "block";
-        box.innerText = message;
-    }else{
-        box.style.display = "none";
-        box.innerText = "";
-    }
-}
-
-function calculateAll(){
+function calculateCrCl(){
 
     let age =
     parseFloat(document.getElementById("age").value);
@@ -140,46 +128,33 @@ function calculateAll(){
     let gender =
     document.getElementById("gender").value;
 
-    let currentAlbumin =
-    parseFloat(document.getElementById("current_albumin").value);
-
-    let targetAlbumin =
-    parseFloat(document.getElementById("target_albumin").value);
-
     // ===== VALIDATION =====
 
-    if(isNaN(age) || age <= 0 || age > 120){
-        showError("Tuổi phải từ 1 đến 120.");
+    if(
+        isNaN(age) ||
+        age <= 0 ||
+        age > 120 ||
+        isNaN(weight) ||
+        weight <= 0 ||
+        weight > 500 ||
+        isNaN(creatinine) ||
+        creatinine <= 0
+    ){
+
+        document.getElementById("crcl_result")
+        .innerText = "-";
+
+        document.getElementById("crcl_stage")
+        .innerText = "Thiếu hoặc sai dữ liệu";
+
         return;
     }
-
-    if(isNaN(weight) || weight <= 0 || weight > 500){
-        showError("Cân nặng phải từ 1 đến 500 kg.");
-        return;
-    }
-
-    if(isNaN(creatinine) || creatinine <= 0){
-        showError("Creatinin phải lớn hơn 0.");
-        return;
-    }
-
-    if(isNaN(currentAlbumin) || currentAlbumin < 0 || currentAlbumin > 100){
-        showError("Albumin hiện tại phải từ 0 đến 100 g/L.");
-        return;
-    }
-
-    if(isNaN(targetAlbumin) || targetAlbumin < 0 || targetAlbumin > 100){
-        showError("Albumin mục tiêu phải từ 0 đến 100 g/L.");
-        return;
-    }
-
-    showError("");
 
     // ===== TÍNH CrCl =====
 
     let crcl =
-    ((140 - age) * weight) /
-    (0.814 * creatinine);
+    ((140 - age) * weight)
+    / (0.814 * creatinine);
 
     if(gender === "female"){
         crcl *= 0.85;
@@ -214,8 +189,40 @@ function calculateAll(){
 
     document.getElementById("crcl_stage")
     .innerText = stage;
+}
 
-    // ===== TÍNH Albumin =====
+function calculateAlbumin(){
+
+    let weight =
+    parseFloat(document.getElementById("weight").value);
+
+    let currentAlbumin =
+    parseFloat(document.getElementById("current_albumin").value);
+
+    let targetAlbumin =
+    parseFloat(document.getElementById("target_albumin").value);
+
+    // ===== VALIDATION =====
+
+    if(
+        isNaN(weight) ||
+        weight <= 0 ||
+        weight > 500 ||
+        isNaN(currentAlbumin) ||
+        currentAlbumin < 0 ||
+        currentAlbumin > 100 ||
+        isNaN(targetAlbumin) ||
+        targetAlbumin < 0 ||
+        targetAlbumin > 100
+    ){
+
+        document.getElementById("albumin_result")
+        .innerText = "-";
+
+        return;
+    }
+
+    // ===== TÍNH AlbumIN =====
 
     let albuminNeed =
     (targetAlbumin - currentAlbumin)
@@ -230,9 +237,20 @@ function calculateAll(){
     .innerText = albuminNeed.toFixed(2);
 }
 
+function calculateAll(){
+
+    calculateCrCl();
+    calculateAlbumin();
+}
+
 document.querySelectorAll("input, select")
 .forEach(element => {
-    element.addEventListener("input", calculateAll);
+
+    element.addEventListener(
+        "input",
+        calculateAll
+    );
 });
 
 </script>
+```
